@@ -110,7 +110,7 @@ class DigiCapsLayer(nn.Module):
 
 class Decoder(nn.Module):
     
-    def __init__(self, out_features, in_features):
+    def __init__(self, out_features=28*28*1, in_features=160):
         super().__init__()
 
         self.out_features = out_features
@@ -125,8 +125,27 @@ class Decoder(nn.Module):
             nn.Sigmoid()
         ])
 
-    def forward(self, x, mask):
-        masked_input = mask * x
-        
+    def forward(self, x):
+        norm = get_vector_norm(x)
 
+        _, max_length = norm.max(dim=1)
+        masked = torch.eye(10)
 
+        masked = masked.index_select(
+            dim=0, index=m.squeeze()
+        ).unsqueeze(dim=2)
+
+        masked_op = masked * x
+
+        masked_op = masked_op.view(x.shape[0],-1)
+
+        reconstruction = self.layer(masked_op)
+        reconstruction = reconstruction.view(
+            -1, 1, 28, 28
+        )
+
+class CapsNet(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        return
